@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,7 +25,7 @@ public class ToDoIntegrationTest {
     ObjectMapper objectMapper;
 
     @Test
-    void expectEmptyListOnGet() throws Exception {
+    void getAllToDos_shouldReturnAEmptyList() throws Exception {
         mockMvc.perform(get("http://localhost:8080/api/todo"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
@@ -33,18 +35,18 @@ public class ToDoIntegrationTest {
 
     @DirtiesContext
     @Test
-    void expectSuccessfulPost() throws Exception {
+    void postToDo_shouldAddANewToDo() throws Exception {
         String actual = mockMvc.perform(
                         post("http://localhost:8080/api/todo")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                        {"description":"Nächsten Endpunkt implementieren","status":"OPEN"}
+                                        {"description":"New ToDo","status":"OPEN"}
                                         """)
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
-                          "description": "Nächsten Endpunkt implementieren",
+                          "description": "New ToDo",
                           "status": "OPEN"
                         }
                         """))
@@ -52,25 +54,25 @@ public class ToDoIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Todo actualTodo = objectMapper.readValue(actual, Todo.class);
-        assertThat(actualTodo.id())
+        ToDo actualTodo = objectMapper.readValue(actual, ToDo.class);
+        assertThat(actualTodo.id)
                 .isNotBlank();
     }
 
     @DirtiesContext
     @Test
-    void expectSuccessfulPut() throws Exception {
+    void putToDo_shouldPutAToDoToTheNextList() throws Exception {
         String saveResult = mockMvc.perform(
                         post("http://localhost:8080/api/todo")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                        {"description":"Nächsten Endpunkt implementieren","status":"OPEN"}
+                                        {"description":"New ToDo","status":"OPEN"}
                                         """)
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
-                          "description": "Nächsten Endpunkt implementieren",
+                          "description": "New ToDo",
                           "status": "OPEN"
                         }
                         """))
@@ -78,21 +80,21 @@ public class ToDoIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Todo saveResultTodo = objectMapper.readValue(saveResult, Todo.class);
-        String id = saveResultTodo.id();
+        ToDo saveResultTodo = objectMapper.readValue(saveResult, ToDo.class);
+        String id = saveResultTodo.id;
 
         mockMvc.perform(
                         put("http://localhost:8080/api/todo/" + id + "/update")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                        {"id":"<ID>","description":"Bla","status":"IN_PROGRESS"}
+                                        {"id":"<ID>","description":"Checked ToDo","status":"IN_PROGRESS"}
                                         """.replaceFirst("<ID>", id))
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
                           "id": "<ID>",
-                          "description": "Bla",
+                          "description": "Checked ToDo",
                           "status": "IN_PROGRESS"
                         }
                         """.replaceFirst("<ID>", id)));
@@ -101,20 +103,20 @@ public class ToDoIntegrationTest {
 
     @DirtiesContext
     @Test
-    void expectSuccessfulDelete() throws Exception {
+    void deleteToDo_shouldDeleteAToDo() throws Exception {
         String saveResult = mockMvc.perform(
                         post("http://localhost:8080/api/todo")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                        {"description":"Nächsten Endpunkt implementieren","status":"OPEN"}
+                                        {"description":"New ToDo","status":"OPEN"}
                                         """)
                 )
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        Todo saveResultTodo = objectMapper.readValue(saveResult, Todo.class);
-        String id = saveResultTodo.id();
+        ToDo saveResultTodo = objectMapper.readValue(saveResult, ToDo.class);
+        String id = saveResultTodo.id;
 
         mockMvc.perform(delete("http://localhost:8080/api/todo/" + id))
                 .andExpect(status().isOk());
@@ -128,18 +130,18 @@ public class ToDoIntegrationTest {
 
     @DirtiesContext
     @Test
-    void expectTodoOnGetById() throws Exception {
+    void getToDoById_shouldReturnaSingleToDo() throws Exception {
         String actual = mockMvc.perform(
                         post("http://localhost:8080/api/todo")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                        {"description":"Nächsten Endpunkt implementieren","status":"OPEN"}
+                                        {"description":"New ToDo","status":"OPEN"}
                                         """)
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
-                          "description": "Nächsten Endpunkt implementieren",
+                          "description": "New ToDo",
                           "status": "OPEN"
                         }
                         """))
@@ -147,15 +149,15 @@ public class ToDoIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Todo actualTodo = objectMapper.readValue(actual, Todo.class);
-        String id = actualTodo.id();
+        ToDo actualTodo = objectMapper.readValue(actual, ToDo.class);
+        String id = actualTodo.id;
 
         mockMvc.perform(get("http://localhost:8080/api/todo/" + id))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
                           "id": "<ID>",
-                          "description": "Nächsten Endpunkt implementieren",
+                          "description": "Next ToDo",
                           "status": "OPEN"
                         }
                         """.replaceFirst("<ID>", id)));

@@ -8,7 +8,7 @@ import lombok.Data;
 public class ToDo {
     public String id;
     public String description;
-    ToDoStatus status;
+    public String status;
 
     public ToDo newId(String id) {
         return new ToDo(id, description, status);
